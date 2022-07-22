@@ -1,6 +1,8 @@
 #include "../functions.hpp"
 #include "catch.hpp"
 
+#include "iostream"
+
 TEST_CASE("Strings are split into chunks")
 {
     GIVEN("A string and a chunk size")
@@ -82,6 +84,65 @@ TEST_CASE("Strings are split into chunks")
             AND_THEN("Last chunk is of length 2")
             {
                 REQUIRE(split_string.at(7) == "ht");
+            }
+        }
+    }
+}
+
+// We may have collisions here, but still...
+TEST_CASE("Signatures represents strings")
+{
+    using namespace std::string_literals;
+    GIVEN("Two equal strings")
+    {
+        const auto left_string = "ABCDEFGH"s;
+        const auto right_string = "ABCDEFGH"s;
+        WHEN("We compute their Signatures with the same chunk size")
+        {
+            const auto chunk_size = std::size_t{ 3 };
+            const auto left_signature = functions::compute_signature(left_string, chunk_size);
+            const auto right_signature = functions::compute_signature(right_string, chunk_size);
+            THEN("Signatures are equal")
+            {
+                REQUIRE(left_signature == right_signature);
+            }
+        }
+        WHEN("We compute their Signatures with different chunk sizes")
+        {
+            const auto left_chunk_size = std::size_t{ 3 };
+            const auto right_chunk_size = std::size_t{ 5 };
+            const auto left_signature = functions::compute_signature(left_string, left_chunk_size);
+            const auto right_signature = functions::compute_signature(right_string, right_chunk_size);
+            THEN("Signatures are not equal") // Unless there's a hash collision
+            {
+                REQUIRE(left_signature != right_signature);
+            }
+        }
+    }
+
+    GIVEN("Two different strings")
+    {
+        const auto left_string = "ABCDEFGH"s;
+        const auto right_string = "ZYXWV"s;
+        WHEN("We compute their Signatures with the same chunk size")
+        {
+            const auto chunk_size = std::size_t{ 3 };
+            const auto left_signature = functions::compute_signature(left_string, chunk_size);
+            const auto right_signature = functions::compute_signature(right_string, chunk_size);
+            THEN("Signatures are not equal")
+            {
+                REQUIRE(left_signature != right_signature);
+            }
+        }
+        WHEN("We compute their Signatures with different chunk sizes")
+        {
+            const auto left_chunk_size = std::size_t{ 3 };
+            const auto right_chunk_size = std::size_t{ 5 };
+            const auto left_signature = functions::compute_signature(left_string, left_chunk_size);
+            const auto right_signature = functions::compute_signature(right_string, right_chunk_size);
+            THEN("Signatures are not equal") // Unless there's a hash collision
+            {
+                REQUIRE(left_signature != right_signature);
             }
         }
     }

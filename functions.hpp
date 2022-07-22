@@ -37,6 +37,23 @@ namespace functions
         }
         return result;
     }
+
+    using Hash = uint64_t;
+    using Signature = std::vector<Hash>;
+    auto compute_signature(const std::string& input_string, const std::size_t chunk_size) -> Signature
+    {
+        const auto chunks = split_into_chunks(input_string, chunk_size);
+        // TODO: this hash function will probably change
+        auto get_hash = [](const auto& string)
+        {
+            return std::hash<std::string>{}(string);
+        };
+        auto result = std::vector<Hash>{};
+        result.reserve(std::size(chunks));
+        for (const auto& chunk : chunks)
+            result.push_back(get_hash(chunk));
+        return result;
+    }
 } // namespace functions
 
 #endif // ROLLING_HASH_FILE_DIFF_FUNCTIONS_HPP
