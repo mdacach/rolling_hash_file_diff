@@ -24,8 +24,20 @@ def generate_file(iterations, chunk_probability, chunks):
     return file
 
 
-created_chunks = create_random_chunks(10, 5)
-file1 = generate_file(50, 0.3, created_chunks)
-file2 = generate_file(50, 0.3, created_chunks)
-open("test_files/file1", "w").write(file1)
-open("test_files/file2", "w").write(file2)
+tests_to_generate = 100
+for i in range(tests_to_generate):
+    directory_path = "test_files/test" + str(i + 1)
+    # os.makedirs(directory_path)
+
+    number_random_chunks = random.randint(1, 50)
+    size_chunks = random.randint(1, 200)
+    created_chunks = create_random_chunks(10, 5)
+
+    file1_iterations = random.randint(1, 1000)
+    file2_iterations = random.randint(1, 1000)
+    file1_chunk_probability = random.random()
+    file2_chunk_probability = random.random()
+    file1 = generate_file(file1_iterations, file1_chunk_probability, created_chunks)
+    file2 = generate_file(file2_iterations, file2_chunk_probability, created_chunks)
+    open(directory_path + "/file1", "w").write(file1)
+    open(directory_path + "/file2", "w").write(file2)
