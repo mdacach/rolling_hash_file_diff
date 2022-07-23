@@ -195,7 +195,7 @@ TEST_CASE("Delta for similar strings is mix of bytes and references to chunks")
         using namespace std::string_literals;
         const auto left_string = "ABCDEFGH"s;
         const auto right_string = "CDEFABCDGHZYABC"s;
-        const auto chunk_size = 3;
+        const auto chunk_size = std::size_t{ 3 };
         WHEN("We compute the delta")
         {
             const auto left_signature = functions::compute_signature(left_string, chunk_size);
