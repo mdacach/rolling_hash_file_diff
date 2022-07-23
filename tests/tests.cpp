@@ -162,7 +162,7 @@ TEST_CASE("Delta for different strings is all bytes")
             const auto right_delta = functions::compute_delta(right_string, left_signature, chunk_size);
             THEN("Delta is all bytes")
             {
-                REQUIRE(right_delta == "ZYXWV");
+                REQUIRE(right_delta == "bZbYbXbWbV");
             }
         }
     }
@@ -202,7 +202,7 @@ TEST_CASE("Delta for similar strings is mix of bytes and references to chunks")
             const auto right_delta = functions::compute_delta(right_string, left_signature, chunk_size);
             THEN("Delta is a mix of bytes and references to chunks")
             {
-                REQUIRE(right_delta == "C@1@0DGHZY@0");
+                REQUIRE(right_delta == "bC@1@0bDbGbHbZbY@0");
             }
         }
     }

@@ -5,6 +5,7 @@
 #ifndef ROLLING_HASH_FILE_DIFF_FUNCTIONS_HPP
 #define ROLLING_HASH_FILE_DIFF_FUNCTIONS_HPP
 
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <ranges>
@@ -88,6 +89,7 @@ namespace functions
             }
             else
             {
+                result += 'b';
                 result += my_string.at(start);
                 start += 1;
             }
@@ -113,7 +115,7 @@ namespace functions
         {
             // Current symbol is either a
             // 1 - Reference to chunk token "@", and is followed by the chunk id
-            // 2 - Literal byte (anything other than "@")
+            // 2 - 'b' representing a literal byte, followed by the actual byte
             const auto current_symbol = delta.at(current_index);
             // TODO: get rid of "magic" @ and designate a const variable for token symbol
             if (current_symbol == '@')
@@ -126,9 +128,10 @@ namespace functions
             }
             else
             {
-                // This is just the byte itself
-                result += current_symbol;
-                current_index += 1;
+                // This represents that the following one is a byte itself
+                assert(current_symbol == 'b');
+                result += delta.at(current_index + 1); // current_index + 1 is the actual byte
+                current_index += 2;
             }
         }
         return result;
