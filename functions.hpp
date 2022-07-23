@@ -94,6 +94,45 @@ namespace functions
         }
         return result;
     }
+
+    auto apply_delta(const std::string& my_string, const Delta& delta, const std::size_t chunk_size) -> std::string
+    {
+        const auto chunks = split_into_chunks(my_string, chunk_size);
+        auto result = std::string{};
+        auto parse_number = [&delta](auto start)
+        {
+            auto number_as_string = std::string{};
+            while (start < std::size(delta) && std::isdigit(delta.at(start)))
+            {
+                number_as_string.push_back(delta.at(start));
+                start += 1;
+            }
+            return number_as_string;
+        };
+        for (std::size_t current_index = 0; current_index < std::size(delta);)
+        {
+            // Current symbol is either a
+            // 1 - Reference to chunk token "@", and is followed by the chunk id
+            // 2 - Literal byte (anything other than "@")
+            const auto current_symbol = delta.at(current_index);
+            // TODO: get rid of "magic" @ and designate a const variable for token symbol
+            if (current_symbol == '@')
+            {
+                // The next symbols represent the id of the matching chunk
+                const auto id_as_string = parse_number(current_index + 1);
+                const auto id = static_cast<std::size_t>(std::stoi(id_as_string));
+                current_index += 1 + id_as_string.length(); // Accounts for the @ and the id
+                result += chunks.at(id);
+            }
+            else
+            {
+                // This is just the byte itself
+                result += current_symbol;
+                current_index += 1;
+            }
+        }
+        return result;
+    }
 } // namespace functions
 
 #endif // ROLLING_HASH_FILE_DIFF_FUNCTIONS_HPP

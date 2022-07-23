@@ -207,3 +207,69 @@ TEST_CASE("Delta for similar strings is mix of bytes and references to chunks")
         }
     }
 }
+
+TEST_CASE("Reconstruct file with references to chunks delta")
+{
+    GIVEN("Two equal strings")
+    {
+        using namespace std::string_literals;
+        const auto left_string = "ABCDEFGH"s;
+        const auto right_string = "ABCDEFGH"s;
+        const auto chunk_size = std::size_t{ 3 };
+        WHEN("We want to update left to equal right")
+        {
+            const auto signature_from_left = functions::compute_signature(left_string, chunk_size);
+            const auto delta_from_right = functions::compute_delta(right_string, signature_from_left, chunk_size);
+            THEN("The result is equal to the file")
+            {
+                // We apply the delta from right to left file
+                const auto result = functions::apply_delta(left_string, delta_from_right, chunk_size);
+                REQUIRE(result == right_string);
+            }
+        }
+    }
+}
+
+TEST_CASE("Reconstruct file with literal bytes delta")
+{
+    GIVEN("Two completely different strings")
+    {
+        using namespace std::string_literals;
+        const auto left_string = "ABCDEFGH"s;
+        const auto right_string = "ZYXW"s;
+        const auto chunk_size = std::size_t{ 3 };
+        WHEN("We want to update left to equal right")
+        {
+            const auto signature_from_left = functions::compute_signature(left_string, chunk_size);
+            const auto delta_from_right = functions::compute_delta(right_string, signature_from_left, chunk_size);
+            THEN("The result is equal to the file")
+            {
+                // We apply the delta from right to left file
+                const auto result = functions::apply_delta(left_string, delta_from_right, chunk_size);
+                REQUIRE(result == right_string);
+            }
+        }
+    }
+}
+
+TEST_CASE("Reconstruct file from mix of literal bytes and reference to chunks delta")
+{
+    GIVEN("Two similar strings")
+    {
+        using namespace std::string_literals;
+        const auto left_string = "ABCDEFGH"s;
+        const auto right_string = "CDEFABCDGHZYABC"s;
+        const auto chunk_size = 3;
+        WHEN("We want to update left to equal right")
+        {
+            const auto signature_from_left = functions::compute_signature(left_string, chunk_size);
+            const auto delta_from_right = functions::compute_delta(right_string, signature_from_left, chunk_size);
+            THEN("The result is equal to the file")
+            {
+                // We apply the delta from right to left file
+                const auto result = functions::apply_delta(left_string, delta_from_right, chunk_size);
+                REQUIRE(result == right_string);
+            }
+        }
+    }
+}
