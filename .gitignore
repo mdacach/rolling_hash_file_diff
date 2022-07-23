@@ -1,3 +1,6 @@
 # Ignore CLion files
 .idea/
 cmake-*
+
+# Ignore build directory from CMake
+build/
