@@ -81,7 +81,6 @@ namespace functions
             if (where != std::ranges::end(signature))
             {
                 const auto equal_chunk_id = std::distance(std::ranges::begin(signature), where);
-                std::cout << equal_chunk_id << '\n';
                 result += '@';
                 result += std::to_string(equal_chunk_id);
                 // We have already processed all this chunk
