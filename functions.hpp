@@ -6,6 +6,8 @@
 #define ROLLING_HASH_FILE_DIFF_FUNCTIONS_HPP
 
 #include <cmath>
+#include <iostream>
+#include <ranges>
 #include <string>
 #include <vector>
 
@@ -52,6 +54,45 @@ namespace functions
         result.reserve(std::size(chunks));
         for (const auto& chunk : chunks)
             result.push_back(get_hash(chunk));
+        return result;
+    }
+
+    using Delta = std::string;
+    auto compute_delta(const std::string& my_string, const Signature& signature, const std::size_t chunk_size) -> Delta
+    {
+        // TODO: change this to rolling hash
+        auto get_hash = [](const auto& string)
+        {
+            return std::hash<std::string>{}(string);
+        };
+        auto get_chunk_starting_at = [&my_string, chunk_size](const auto start)
+        {
+            // We either get `chunk_size` values or the leftover ones.
+            if (start + chunk_size < std::size(my_string))
+                return my_string.substr(start, chunk_size);
+            return my_string.substr(start);
+        };
+        auto result = Delta{};
+        for (std::size_t start = 0; start < std::size(my_string);)
+        {
+            const auto chunk = get_chunk_starting_at(start);
+            const auto this_hash = get_hash(chunk);
+            const auto where = std::ranges::find(signature, this_hash);
+            if (where != std::ranges::end(signature))
+            {
+                const auto equal_chunk_id = std::distance(std::ranges::begin(signature), where);
+                std::cout << equal_chunk_id << '\n';
+                result += '@';
+                result += std::to_string(equal_chunk_id);
+                // We have already processed all this chunk
+                start += chunk_size;
+            }
+            else
+            {
+                result += my_string.at(start);
+                start += 1;
+            }
+        }
         return result;
     }
 } // namespace functions

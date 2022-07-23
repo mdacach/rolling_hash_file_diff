@@ -147,3 +147,63 @@ TEST_CASE("Signatures represents strings")
         }
     }
 }
+
+TEST_CASE("Delta for different strings is all bytes")
+{
+    GIVEN("Two different strings")
+    {
+        using namespace std::string_literals;
+        const auto left_string = "ABCDEFGH"s;
+        const auto right_string = "ZYXWV"s;
+        const auto chunk_size = 3;
+        WHEN("We compute the delta")
+        {
+            const auto left_signature = functions::compute_signature(left_string, chunk_size);
+            const auto right_delta = functions::compute_delta(right_string, left_signature, chunk_size);
+            THEN("Delta is all bytes")
+            {
+                REQUIRE(right_delta == "ZYXWV");
+            }
+        }
+    }
+}
+
+TEST_CASE("Delta for equal strings is all references to chunks")
+{
+    GIVEN("Two equal strings")
+    {
+        using namespace std::string_literals;
+        const auto left_string = "ABCDEFGH"s;
+        const auto right_string = "ABCDEFGH"s;
+        const auto chunk_size = 3;
+        WHEN("We compute the delta")
+        {
+            const auto left_signature = functions::compute_signature(left_string, chunk_size);
+            const auto right_delta = functions::compute_delta(right_string, left_signature, chunk_size);
+            THEN("Delta is all references to chunks")
+            {
+                REQUIRE(right_delta == "@0@1@2");
+            }
+        }
+    }
+}
+
+TEST_CASE("Delta for similar strings is mix of bytes and references to chunks")
+{
+    GIVEN("Two similar strings")
+    {
+        using namespace std::string_literals;
+        const auto left_string = "ABCDEFGH"s;
+        const auto right_string = "CDEFABCDGHZYABC"s;
+        const auto chunk_size = 3;
+        WHEN("We compute the delta")
+        {
+            const auto left_signature = functions::compute_signature(left_string, chunk_size);
+            const auto right_delta = functions::compute_delta(right_string, left_signature, chunk_size);
+            THEN("Delta is a mix of bytes and references to chunks")
+            {
+                REQUIRE(right_delta == "C@1@0DGHZY@0");
+            }
+        }
+    }
+}
