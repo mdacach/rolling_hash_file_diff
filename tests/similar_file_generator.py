@@ -30,8 +30,8 @@ for i in range(tests_to_generate):
     # os.makedirs(directory_path)
 
     number_random_chunks = random.randint(1, 50)
-    size_chunks = random.randint(1, 200)
-    created_chunks = create_random_chunks(10, 5)
+    size_chunks = random.randint(1, 500)
+    created_chunks = create_random_chunks(number_random_chunks, size_chunks)
 
     file1_iterations = random.randint(1, 1000)
     file2_iterations = random.randint(1, 1000)
