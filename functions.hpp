@@ -15,6 +15,70 @@
 // TODO: restructure project
 namespace functions
 {
+    using Hash = uint64_t;
+    using Signature = std::vector<Hash>;
+
+    auto compute_single_rolling_hash(const std::string& input) -> Hash
+    {
+        const auto chunk_size = std::size(input);
+        auto mod = static_cast<uint64_t>(1e9 + 7);
+        auto base = 257; // A prime number
+        auto base_powers = std::vector<uint64_t>(chunk_size + 1);
+        base_powers.at(0) = 1;
+        for (std::size_t i = 1; i <= chunk_size; ++i)
+            base_powers.at(i) = (base_powers.at(i - 1) * base) % mod;
+
+        auto current_hash = Hash{ 0 };
+        auto current_power = base;
+        for (std::size_t i = 0; i < chunk_size; ++i)
+        {
+            const auto power = chunk_size - i - 1;
+
+            const auto value_for_this_char = input.at(i) * base_powers.at(power);
+            current_hash += value_for_this_char;
+            current_hash %= mod;
+        }
+        return current_hash;
+    }
+
+    auto compute_rolling_hashes(const std::string& input, const std::size_t chunk_size) -> std::vector<Hash>
+    {
+        auto mod = static_cast<uint64_t>(1e9 + 7);
+        auto base = 257; // A prime number
+        auto base_powers = std::vector<uint64_t>(chunk_size + 1);
+        base_powers.at(0) = 1;
+        for (std::size_t i = 1; i <= chunk_size; ++i)
+            base_powers.at(i) = (base_powers.at(i - 1) * base) % mod;
+
+        auto current_hash = compute_single_rolling_hash(input);
+        auto result = std::vector<Hash>{};
+        // Compute the initial window
+        if (const auto size = std::size(input); size < chunk_size)
+            return { current_hash };
+
+        result.push_back(current_hash);
+        for (std::size_t i = chunk_size; i < std::size(input); ++i)
+        {
+            const auto to_add = input.at(i);
+            const auto to_remove = input.at(i - chunk_size);
+            // We add char at i to the hash
+            // And remove the first character of the hash
+
+            current_hash *= base;
+            current_hash %= mod;
+
+            current_hash += to_add;
+            current_hash %= mod;
+
+            current_hash -= to_remove * base_powers.at(chunk_size);
+            current_hash %= mod;
+
+            result.push_back(current_hash);
+        }
+
+        return result;
+    }
+
     auto split_into_chunks(const std::string& input_string, const std::size_t chunk_size) -> std::vector<std::string>
     {
         if (std::size(input_string) <= chunk_size)
@@ -41,14 +105,14 @@ namespace functions
         return result;
     }
 
-    using Hash = uint64_t;
-    using Signature = std::vector<Hash>;
     auto compute_signature(const std::string& input_string, const std::size_t chunk_size) -> Signature
     {
         const auto chunks = split_into_chunks(input_string, chunk_size);
         // TODO: this hash function will probably change
         auto get_hash = [](const auto& string)
         {
+            //            return functions::compute_rolling_hash(string);
+            return functions::compute_single_rolling_hash(string);
             return std::hash<std::string>{}(string);
         };
         auto result = std::vector<Hash>{};
@@ -62,9 +126,11 @@ namespace functions
     auto compute_delta(const std::string& my_string, const Signature& signature, const std::size_t chunk_size) -> Delta
     {
         // TODO: change this to rolling hash
-        auto get_hash = [](const auto& string)
+        const auto all_hashes = functions::compute_rolling_hashes(my_string, chunk_size);
+        auto get_hash = [&all_hashes](auto start_index)
         {
-            return std::hash<std::string>{}(string);
+            assert(start_index < std::size(all_hashes));
+            return all_hashes.at(start_index);
         };
         auto get_chunk_starting_at = [&my_string, chunk_size](const auto start)
         {
@@ -76,8 +142,18 @@ namespace functions
         auto result = Delta{};
         for (std::size_t start = 0; start < std::size(my_string);)
         {
-            const auto chunk = get_chunk_starting_at(start);
-            const auto this_hash = get_hash(chunk);
+            //            const auto chunk = get_chunk_starting_at(start);
+            // If we do not have enough characters to complete a chunk, we will
+            // not match it against the other file
+            if (start + chunk_size - 1 >= std::size(my_string))
+            {
+                result += 'b';
+                result += my_string.at(start);
+                start += 1;
+                continue;
+            }
+
+            const auto this_hash = get_hash(start);
             const auto where = std::ranges::find(signature, this_hash);
             if (where != std::ranges::end(signature))
             {

@@ -273,3 +273,17 @@ TEST_CASE("Reconstruct file from mix of literal bytes and reference to chunks de
         }
     }
 }
+
+TEST_CASE("Rolling hash computations")
+{
+    GIVEN("An ASCII string")
+    {
+        using namespace std::string_literals;
+        const auto small_string = "abcab"s;
+        WHEN("We compute its rolling hash")
+        {
+            const auto hashes = functions::compute_rolling_hashes(small_string, 2);
+            return;
+        }
+    }
+}
