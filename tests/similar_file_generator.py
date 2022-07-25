@@ -1,4 +1,4 @@
-# Create similar files to be used when testing the file diff program
+# Create files to be used when testing the file diff program
 import os
 import random
 import string
@@ -95,6 +95,5 @@ def generate_very_similar_files(directory_path):
         open(path_to_save + "/file1", "w").write(file1)
         open(path_to_save + "/file2", "w").write(file2)
 
-
 # generate_big_files_for_automated_test("test_files/hard_files")
-generate_very_similar_files("test_files/similar_files")
+# generate_very_similar_files("test_files/very_similar_files")

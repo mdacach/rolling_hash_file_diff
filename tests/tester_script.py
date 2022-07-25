@@ -2,12 +2,7 @@ import filecmp
 import os
 import subprocess
 
-# We have generated test cases with `similar_file_generator.py`
-bad_counter = 0  # Cases where we could not reconstruct the file -> algorithm failed
-tests_directory = "/home/matheus/Development/Eiger/rolling_hash_file_diff/tests/test_files/similar_files/"
-# Run for each test inside the chosen directory
-number_tests = sum(os.path.isdir(tests_directory + p) for p in os.listdir(tests_directory))
-
+# ******** Some statistics to be tracked ********
 # Total size of bytes sent through the network if we did not use the algorithm
 send_file_total_size = 0
 # Total size of bytes sent through the network using the algorithm
@@ -15,11 +10,24 @@ send_file_total_size = 0
 algorithm_total_size = 0
 processed_counter = 0
 
+# Total size from the "signature" files
 total_signature_file_size = 0
+# Total size from the "delta" files
 total_delta_file_size = 0
 
+# In how many cases the algorithm performed better than simply sending the file
+# Note that this algorithm is terribly inefficient for not-very-similar files due to
+# human-readable signature and delta (a lot of overhead)
 algorithm_better_counter = 0
+
+# Chunk size to use during tests
 chunk_size = 300
+
+# We have generated test cases with `similar_file_generator.py`
+bad_counter = 0  # Cases where we could not reconstruct the file -> algorithm failed
+tests_directory = "test_files/very_similar_files/"
+# Run for each test inside the chosen directory
+number_tests = sum(os.path.isdir(tests_directory + p) for p in os.listdir(tests_directory))
 for test_number in range(1, number_tests + 1):
     # Each test case has two files, the original (file1) and the updated (file2)
     # Ultimately, we want to be able to reconstruct updated from original
@@ -52,7 +60,6 @@ for test_number in range(1, number_tests + 1):
 
     # Statistics for each test case
     # Depending on how similar the files are, the algorithm has very different efficiency
-    # TODO: Better statistics generated from tests
     send_file_total_size += os.stat(file2).st_size
     algorithm_total_size += os.stat('signature_file').st_size + os.stat('delta_file').st_size
 
@@ -78,3 +85,8 @@ print(f"Total size for algorithm: {algorithm_total_size}")
 print(f"Total size from signatures: {total_signature_file_size}")
 print(f"Total size from deltas: {total_delta_file_size}")
 print(f"Algorithm better in {algorithm_better_counter}/{number_tests} cases")
+
+# *********** Clean Up ***********
+os.remove('signature_file')
+os.remove('delta_file')
+os.remove('reconstructed_file')

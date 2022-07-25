@@ -30,16 +30,16 @@ auto main(int argc, const char* argv[]) -> int
                     ./rolling_hash_file_diff signature old-file signature-file [options]\n\
                     ./rolling_hash_file_diff delta signature-file new-file delta-file [options]\n\
                     ./rolling_hash_file_diff patch basis-file delta-file new-file [options]\n"
-                       "You may pass '--chunk-size X' in [options] to explicitly ask for a chunk size to be used."
+                       "You may pass '--chunk-size X' in [options] to explicitly ask for a chunk size to be used.\n"
                        "Note that if you choose to do so, you need to pass the same chunk-size to all other related"
-                       "commands."
+                       "commands.\n"
                        "e.g. \n./rolling_hash_file_diff signature my_file out_file --chunk-size 30\n"
-                       "will call the signature command with 30 bytes chunk size."s;
+                       "will call the signature command with 30 bytes chunk size.\n"s;
 
     // TODO: We do not treat user mistakes nor sanitize the input.
 
     // 1. Check if user specified a chunk size
-    auto chunk_size = std::size_t{ 300 }; // Default chunk size is 30 bytes
+    auto chunk_size = std::size_t{ 30 }; // Default chunk size is 30 bytes
     for (auto i = 1; i < argc; ++i)
     {
         if (argv[i] == "--chunk-size"s)
