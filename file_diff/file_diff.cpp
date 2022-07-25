@@ -54,7 +54,6 @@ auto FileDiff::compute_delta(const std::string& my_string, const Signature& sign
         }
 
         const auto this_hash = get_hash(start);
-        const auto& rolling_hashes = signature.rolling_hashes;
         const auto where = rolling_hash_to_id.find(this_hash);
         if (where != std::end(rolling_hash_to_id))
         {
