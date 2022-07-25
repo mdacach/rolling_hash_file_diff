@@ -1,7 +1,6 @@
-#include "../file_diff.hpp"
 #include "catch.hpp"
 
-#include "iostream"
+#include "../file_diff/file_diff.hpp"
 
 TEST_CASE("Strings are split into chunks")
 {
@@ -173,8 +172,8 @@ TEST_CASE("Delta for equal strings is all references to chunks")
     GIVEN("Two equal strings")
     {
         using namespace std::string_literals;
-        const auto left_string = "ABCDEFGH"s;
-        const auto right_string = "ABCDEFGH"s;
+        const auto left_string = "ABCDEFGHI"s;
+        const auto right_string = "ABCDEFGHI"s;
         const auto chunk_size = 3;
         WHEN("We compute the delta")
         {
@@ -183,6 +182,31 @@ TEST_CASE("Delta for equal strings is all references to chunks")
             THEN("Delta is all references to chunks")
             {
                 REQUIRE(right_delta == "@0@1@2");
+            }
+        }
+    }
+}
+
+TEST_CASE("Delta for equal strings is all references to chunks minus possibly the last chunk")
+{
+    GIVEN("Two equal strings")
+    {
+        using namespace std::string_literals;
+        const auto left_string = "ABCDEFGH"s;
+        const auto right_string = "ABCDEFGH"s;
+        // The last chunk will be "GH", which is not of the appropriate size
+        const auto chunk_size = 3;
+        WHEN("We compute the delta")
+        {
+            const auto left_signature = FileDiff::compute_signature(left_string, chunk_size);
+            const auto right_delta = FileDiff::compute_delta(right_string, left_signature, chunk_size);
+            THEN("Delta is all references to chunks")
+            {
+                // As we are computing the rolling hashes of only chunks of `chunk_size`
+                // The last one will not match
+                REQUIRE(right_delta == "@0@1bGbH");
+                // This is not a big problem because it may happen only with the last chunk
+                // which should be a small portion of a big file
             }
         }
     }

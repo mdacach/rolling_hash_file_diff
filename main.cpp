@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "file_diff.hpp"
+#include "file_diff/file_diff.hpp"
 
 auto read_file_to_string(const std::string& file_path) -> std::string;
 auto save_to_file(const std::string& file_path, const std::string& content) -> void;
