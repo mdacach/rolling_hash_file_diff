@@ -2,12 +2,12 @@
 #include <iostream>
 #include <sstream>
 
-#include "functions.hpp"
+#include "file_diff.hpp"
 
 auto read_file_to_string(const std::string& file_path) -> std::string;
 auto save_to_file(const std::string& file_path, const std::string& content) -> void;
-auto save_signature_to_file(const std::string& file_path, const functions::Signature& signature) -> void;
-auto read_signature_from_file(const std::string& file_path) -> functions::Signature;
+auto save_signature_to_file(const std::string& file_path, const FileDiff::Signature& signature) -> void;
+auto read_signature_from_file(const std::string& file_path) -> FileDiff::Signature;
 
 auto main(int argc, const char* argv[]) -> int
 {
@@ -32,7 +32,7 @@ auto main(int argc, const char* argv[]) -> int
         const auto old_file = read_file_to_string(argv[2]);
         std::cout << "Read old_file\n";
         const auto signature_file = argv[3];
-        const auto signature = functions::compute_signature(old_file, chunk_size);
+        const auto signature = FileDiff::compute_signature(old_file, chunk_size);
         save_signature_to_file(signature_file, signature);
     }
     else if (command == "delta")
@@ -40,7 +40,7 @@ auto main(int argc, const char* argv[]) -> int
         const auto signature = read_signature_from_file(argv[2]);
         const auto new_file = read_file_to_string(argv[3]);
         const auto delta_file = argv[4];
-        const auto delta = functions::compute_delta(new_file, signature, chunk_size);
+        const auto delta = FileDiff::compute_delta(new_file, signature, chunk_size);
         save_to_file(delta_file, delta);
     }
     else if (command == "patch")
@@ -48,7 +48,7 @@ auto main(int argc, const char* argv[]) -> int
         const auto basis_file = read_file_to_string(argv[2]);
         const auto delta_file = read_file_to_string(argv[3]);
         const auto reconstructed_file = argv[4];
-        const auto reconstructed = functions::apply_delta(basis_file, delta_file, chunk_size);
+        const auto reconstructed = FileDiff::apply_delta(basis_file, delta_file, chunk_size);
         save_to_file(reconstructed_file, reconstructed);
     }
     else
@@ -79,7 +79,7 @@ auto save_to_file(const std::string& file_path, const std::string& content) -> v
     output_file << content;
 }
 
-auto save_signature_to_file(const std::string& file_path, const functions::Signature& signature) -> void
+auto save_signature_to_file(const std::string& file_path, const FileDiff::Signature& signature) -> void
 {
     std::cout << "Saving signature to file: " << file_path << '\n';
     auto as_string = std::string{};
@@ -88,13 +88,13 @@ auto save_signature_to_file(const std::string& file_path, const functions::Signa
     save_to_file(file_path, as_string);
 }
 
-auto read_signature_from_file(const std::string& file_path) -> functions::Signature
+auto read_signature_from_file(const std::string& file_path) -> FileDiff::Signature
 {
     auto input_file = std::ifstream{ file_path };
     if (!input_file)
         throw std::runtime_error("Could not open file\n");
-    auto result = functions::Signature{};
-    auto current_hash = functions::Hash{};
+    auto result = FileDiff::Signature{};
+    auto current_hash = FileDiff::Hash{};
     while (input_file >> current_hash)
         result.push_back(current_hash);
     return result;
