@@ -57,6 +57,7 @@ if (ENABLE_DEVELOPER_MODE)
     endif ()
 endif ()
 
+add_subdirectory(io_helpers)
 add_subdirectory(rolling_hash)
 add_subdirectory(file_diff)
 
@@ -64,7 +65,7 @@ add_executable(${PROJECT_NAME}
         main.cpp
         )
 
-target_link_libraries(${PROJECT_NAME} file_diff)
+target_link_libraries(${PROJECT_NAME} io_helpers file_diff)
 
 #target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_BINARY_DIR})
 #add_library(file_diff file_diff.hpp file_diff.cpp)
