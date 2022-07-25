@@ -57,6 +57,7 @@ if (ENABLE_DEVELOPER_MODE)
     endif ()
 endif ()
 
+add_subdirectory(rolling_hash)
 add_subdirectory(file_diff)
 
 add_executable(${PROJECT_NAME}
