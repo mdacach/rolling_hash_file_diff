@@ -22,7 +22,6 @@ auto FileDiff::compute_signature(const std::string& input_string, const std::siz
 auto FileDiff::compute_delta(const std::string& my_string, const Signature& signature, const std::size_t chunk_size)
     -> Delta
 {
-    // TODO: change this to rolling hash
     const auto all_hashes = compute_rolling_hashes(my_string, chunk_size);
     auto get_hash = [&all_hashes](auto start_index)
     {
