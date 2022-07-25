@@ -5,9 +5,6 @@
 
 auto main(int argc, const char* argv[]) -> int
 {
-    // TODO: change this to be variable
-    const auto chunk_size = std::size_t{ 30 };
-
     // We want to update `my_file`  to be equal to `other_file`
     // but our network is slow, so we don't want to send big files through it.
 
@@ -30,12 +27,30 @@ auto main(int argc, const char* argv[]) -> int
 
     using namespace std::string_literals;
     const auto usage = "Usage must be one of: \n\
-                    ./rolling_hash_file_diff signature old-file signature-file\n\
-                    ./rolling_hash_file_diff delta signature-file new-file delta-file\n\
-                    ./rolling_hash_file_diff patch basis-file delta-file new-file\n"s;
-    // 1. Parse the user command.
+                    ./rolling_hash_file_diff signature old-file signature-file [options]\n\
+                    ./rolling_hash_file_diff delta signature-file new-file delta-file [options]\n\
+                    ./rolling_hash_file_diff patch basis-file delta-file new-file [options]\n"
+                       "You may pass '--chunk-size X' in [options] to explicitly ask for a chunk size to be used."
+                       "Note that if you choose to do so, you need to pass the same chunk-size to all other related"
+                       "commands."
+                       "e.g. \n./rolling_hash_file_diff signature my_file out_file --chunk-size 30\n"
+                       "will call the signature command with 30 bytes chunk size."s;
+
+    // TODO: We do not treat user mistakes nor sanitize the input.
+
+    // 1. Check if user specified a chunk size
+    auto chunk_size = std::size_t{ 300 }; // Default chunk size is 30 bytes
+    for (auto i = 1; i < argc; ++i)
+    {
+        if (argv[i] == "--chunk-size"s)
+        {
+            assert(i + 1 < argc);
+            chunk_size = static_cast<std::size_t>(std::stoi(argv[i + 1]));
+        }
+    }
+
+    // 2. Parse the user command
     const auto command = std::string(argv[1]);
-    // TODO: We do not treat many user mistakes nor sanitize the input.
     if (command == "signature")
     {
         const auto old_file = io_helpers::read_file_to_string(argv[2]);

@@ -19,6 +19,7 @@ total_signature_file_size = 0
 total_delta_file_size = 0
 
 algorithm_better_counter = 0
+chunk_size = 300
 for test_number in range(1, number_tests + 1):
     # Each test case has two files, the original (file1) and the updated (file2)
     # Ultimately, we want to be able to reconstruct updated from original
@@ -28,15 +29,20 @@ for test_number in range(1, number_tests + 1):
     # Note that the calls below *creates* new files with our given name
     # Calls the executable passing file1 and file2 as arguments
     # Create the signature from file1
-    subprocess.run(["../build/rolling_hash_file_diff", "signature", file1, "signature_file"])
+    subprocess.run(
+        ["../build/rolling_hash_file_diff", "signature", file1, "signature_file", "--chunk-size", str(chunk_size)])
     # `signature_file` is the newly-created file with the corresponding signature
 
     # Create the delta from file2 regarding signature
-    subprocess.run(["../build/rolling_hash_file_diff", "delta", "signature_file", file2, "delta_file"])
+    subprocess.run(
+        ["../build/rolling_hash_file_diff", "delta", "signature_file", file2, "delta_file", "--chunk-size",
+         str(chunk_size)])
     # `delta_file` is the newly-created file with the corresponding delta
 
     # Patch file1 with delta
-    subprocess.run(["../build/rolling_hash_file_diff", "patch", file1, "delta_file", "reconstructed_file"])
+    subprocess.run(
+        ["../build/rolling_hash_file_diff", "patch", file1, "delta_file", "reconstructed_file", "--chunk-size",
+         str(chunk_size)])
     # `reconstructed_file` is the newly-created file with the result of adding the delta to file1
 
     # If all went well, `reconstructed_file` should be equal to `file2`
