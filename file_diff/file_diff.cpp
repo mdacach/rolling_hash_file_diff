@@ -163,10 +163,8 @@ auto FileDiff::split_into_chunks(const std::string& input_string, const std::siz
 
 auto FileDiff::compute_single_rolling_hash(const std::string& input) -> Hash
 {
-    const auto ascii_size_plus_one = 257;
-    const auto big_prime_number = static_cast<uint64_t>(1e9 + 7);
     const auto chunk_size = std::size(input);
-    const auto hasher = RollingHash(ascii_size_plus_one, big_prime_number, chunk_size, input);
+    const auto hasher = RollingHash(m_rolling_hash_base, m_rolling_hash_modulo, chunk_size, input);
     return hasher.get_current_hash();
 }
 
@@ -176,10 +174,8 @@ auto FileDiff::compute_rolling_hashes(const std::string& input, const std::size_
     if (std::size(input) < chunk_size)
         return { compute_single_rolling_hash(input) };
 
-    const auto ascii_size_plus_one = 257;
-    const auto big_prime_number = static_cast<uint64_t>(1e9 + 7);
     const auto first_chunk = input.substr(0, chunk_size);
-    auto hasher = RollingHash(ascii_size_plus_one, big_prime_number, chunk_size, first_chunk);
+    auto hasher = RollingHash(m_rolling_hash_base, m_rolling_hash_modulo, chunk_size, first_chunk);
 
     auto current_hash = hasher.get_current_hash();
     auto result = std::vector<Hash>{};

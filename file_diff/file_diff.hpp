@@ -46,6 +46,10 @@ private:
     static auto compute_rolling_hashes(const std::string& input, std::size_t chunk_size) -> std::vector<Hash>;
 
     static auto compute_strong_hash(const std::string& input) -> Hash;
+
+private:
+    static const uint64_t m_rolling_hash_base{ 257 };                              // Ascii size plus one
+    static const uint64_t m_rolling_hash_modulo{ static_cast<uint64_t>(1e9 + 7) }; // A big prime number
 };
 
 #endif // ROLLING_HASH_FILE_DIFF_FILE_DIFF_HPP
