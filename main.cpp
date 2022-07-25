@@ -79,7 +79,6 @@ auto save_to_file(const std::string& file_path, const std::string& content) -> v
 
 auto save_signature_to_file(const std::string& file_path, const FileDiff::Signature& signature) -> void
 {
-    std::cout << "Saving signature to file: " << file_path << '\n';
     auto as_string = std::string{};
     for (const auto x : signature)
         as_string += std::to_string(x) + '\n';
