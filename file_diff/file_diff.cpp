@@ -5,6 +5,8 @@
 #include "file_diff.hpp"
 #include "../rolling_hash/rolling_hash.hpp"
 
+#include <map>
+
 auto FileDiff::compute_signature(const std::string& input_string, const std::size_t chunk_size) -> Signature
 {
     const auto chunks = split_into_chunks(input_string, chunk_size);
@@ -29,6 +31,15 @@ auto FileDiff::compute_delta(const std::string& my_string, const Signature& sign
         assert(start_index < std::size(all_hashes));
         return all_hashes.at(start_index);
     };
+    const auto rolling_hash_to_id = [&signature]
+    {
+        const auto& rolling_hashes = signature.rolling_hashes;
+        using ID = std::size_t;
+        auto result = std::map<Hash, ID>{};
+        for (std::size_t i = 0; i < std::size(rolling_hashes); ++i)
+            result[rolling_hashes.at(i)] = i;
+        return result;
+    }();
     auto result = Delta{};
     for (std::size_t start = 0; start < std::size(my_string);)
     {
@@ -43,10 +54,9 @@ auto FileDiff::compute_delta(const std::string& my_string, const Signature& sign
         }
 
         const auto this_hash = get_hash(start);
-        // TODO: optimize this signature matching
         const auto& rolling_hashes = signature.rolling_hashes;
-        const auto where = std::ranges::find(rolling_hashes, this_hash);
-        if (where != std::ranges::end(rolling_hashes))
+        const auto where = rolling_hash_to_id.find(this_hash);
+        if (where != std::end(rolling_hash_to_id))
         {
             // This is a potential match
             // Let's compare the Strong hashes to be sure
@@ -54,14 +64,14 @@ auto FileDiff::compute_delta(const std::string& my_string, const Signature& sign
             const auto this_string = my_string.substr(start, chunk_size);
             const auto this_strong_hash = compute_strong_hash(this_string);
 
-            const auto candidate_equal_chunk_id = std::distance(std::ranges::begin(rolling_hashes), where);
-            const auto candidate_strong_hash = strong_hashes.at(candidate_equal_chunk_id);
+            const auto [_, candidate_id] = *where;
+            const auto candidate_strong_hash = strong_hashes.at(candidate_id);
 
             const auto is_match = this_strong_hash == candidate_strong_hash;
             if (is_match)
             {
                 result += '@';
-                result += std::to_string(candidate_equal_chunk_id);
+                result += std::to_string(candidate_id);
                 // We have already processed all this chunk
                 start += chunk_size;
             }
