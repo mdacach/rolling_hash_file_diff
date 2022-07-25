@@ -170,12 +170,13 @@ auto FileDiff::compute_rolling_hashes(const std::string& input, const std::size_
     for (std::size_t i = 1; i <= chunk_size; ++i)
         base_powers.at(i) = (base_powers.at(i - 1) * base) % mod;
 
-    auto current_hash = compute_single_rolling_hash(input);
-    auto result = std::vector<Hash>{};
     // Compute the initial window
-    if (const auto size = std::size(input); size < chunk_size)
-        return { current_hash };
+    if (std::size(input) < chunk_size)
+        return { compute_single_rolling_hash(input) };
 
+    auto current_hash = compute_single_rolling_hash(input.substr(0, chunk_size));
+
+    auto result = std::vector<Hash>{};
     result.push_back(current_hash);
     for (std::size_t i = chunk_size; i < std::size(input); ++i)
     {
