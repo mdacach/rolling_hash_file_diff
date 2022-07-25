@@ -191,7 +191,12 @@ auto FileDiff::compute_rolling_hashes(const std::string& input, const std::size_
         current_hash += to_add;
         current_hash %= mod;
 
-        current_hash -= to_remove * base_powers.at(chunk_size);
+        // We must be careful with underflow here, as we are using unsigned integers
+        const auto amount_to_remove = (to_remove * base_powers.at(chunk_size)) % mod;
+        // Compiler will optimize this while out
+        while (amount_to_remove > current_hash)
+            current_hash += mod;
+        current_hash -= amount_to_remove;
         current_hash %= mod;
 
         result.push_back(current_hash);
