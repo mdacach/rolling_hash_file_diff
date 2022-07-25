@@ -11,13 +11,13 @@ auto read_signature_from_file(const std::string& file_path) -> FileDiff::Signatu
 
 auto main(int argc, const char* argv[]) -> int
 {
-    std::cout << "You have entered " << argc << " arguments: " << '\n';
-    for (int i = 0; i < argc; ++i)
-        std::cout << argv[i] << '\n';
-    std::cout << std::flush;
+    //    std::cout << "You have entered " << argc << " arguments: " << '\n';
+    //    for (int i = 0; i < argc; ++i)
+    //        std::cout << argv[i] << '\n';
+    //    std::cout << std::flush;
 
     // TODO: change this to be variable
-    const auto chunk_size = std::size_t{ 300 };
+    const auto chunk_size = std::size_t{ 30 };
 
     // We want to update `my_file` to be equal to `other_file`
     // We first send our signature to the other machine
@@ -28,9 +28,7 @@ auto main(int argc, const char* argv[]) -> int
     // TODO: We do not treat user mistakes very well here
     if (command == "signature")
     {
-        std::cout << "Called signature\n";
         const auto old_file = read_file_to_string(argv[2]);
-        std::cout << "Read old_file\n";
         const auto signature_file = argv[3];
         const auto signature = FileDiff::compute_signature(old_file, chunk_size);
         save_signature_to_file(signature_file, signature);
