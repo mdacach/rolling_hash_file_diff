@@ -19,8 +19,6 @@ auto RollingHash::get_current_hash() const -> Hash
 
 auto RollingHash::append(char c) -> void
 {
-    const auto current_length = std::size(m_current_string);
-    m_current_string.push_back(c);
 
     const auto char_value = get_ascii_value_from_char(c);
     // "Shift the hash to the left"
@@ -30,6 +28,8 @@ auto RollingHash::append(char c) -> void
     m_current_hash += char_value;
     m_current_hash %= m_modulo;
     // We always take the modulo to ensure that the value is always left in a valid range.
+
+    m_current_string.push_back(c);
 }
 
 auto RollingHash::remove_first() -> void
