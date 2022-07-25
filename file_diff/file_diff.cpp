@@ -48,11 +48,29 @@ auto FileDiff::compute_delta(const std::string& my_string, const Signature& sign
         const auto where = std::ranges::find(rolling_hashes, this_hash);
         if (where != std::ranges::end(rolling_hashes))
         {
-            const auto equal_chunk_id = std::distance(std::ranges::begin(rolling_hashes), where);
-            result += '@';
-            result += std::to_string(equal_chunk_id);
-            // We have already processed all this chunk
-            start += chunk_size;
+            // This is a potential match
+            // Let's compare the Strong hashes to be sure
+            const auto& strong_hashes = signature.strong_hashes;
+            const auto this_string = my_string.substr(start, chunk_size);
+            const auto this_strong_hash = compute_strong_hash(this_string);
+
+            const auto candidate_equal_chunk_id = std::distance(std::ranges::begin(rolling_hashes), where);
+            const auto candidate_strong_hash = strong_hashes.at(candidate_equal_chunk_id);
+
+            const auto is_match = this_strong_hash == candidate_strong_hash;
+            if (is_match)
+            {
+                result += '@';
+                result += std::to_string(candidate_equal_chunk_id);
+                // We have already processed all this chunk
+                start += chunk_size;
+            }
+            else
+            {
+                result += 'b';
+                result += my_string.at(start);
+                start += 1;
+            }
         }
         else
         {

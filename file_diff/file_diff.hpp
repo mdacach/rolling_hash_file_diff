@@ -18,6 +18,8 @@ public:
     using Hash = uint64_t;
     struct Signature
     {
+        // We will be accessing rolling hashes most of the time, so having them together here
+        // is better (cache locality)
         std::vector<Hash> rolling_hashes{};
         std::vector<Hash> strong_hashes{};
 
