@@ -28,17 +28,9 @@ auto FileDiff::compute_delta(const std::string& my_string, const Signature& sign
         assert(start_index < std::size(all_hashes));
         return all_hashes.at(start_index);
     };
-    auto get_chunk_starting_at = [&my_string, chunk_size](const auto start)
-    {
-        // We either get `chunk_size` values or the leftover ones.
-        if (start + chunk_size < std::size(my_string))
-            return my_string.substr(start, chunk_size);
-        return my_string.substr(start);
-    };
     auto result = Delta{};
     for (std::size_t start = 0; start < std::size(my_string);)
     {
-        //            const auto chunk = get_chunk_starting_at(start);
         // If we do not have enough characters to complete a chunk, we will
         // not match it against the other file
         if (start + chunk_size - 1 >= std::size(my_string))
@@ -149,7 +141,6 @@ auto FileDiff::compute_single_rolling_hash(const std::string& input) -> Hash
         base_powers.at(i) = (base_powers.at(i - 1) * base) % mod;
 
     auto current_hash = Hash{ 0 };
-    auto current_power = base;
     for (std::size_t i = 0; i < chunk_size; ++i)
     {
         const auto power = chunk_size - i - 1;
