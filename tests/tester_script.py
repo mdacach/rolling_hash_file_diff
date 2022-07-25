@@ -47,7 +47,7 @@ for test_number in range(1, number_tests + 1):
     processed_counter += 1
     print(f"#{processed_counter}/{number_tests}")
 
-print("Finished testing the algorithm for {number_tests} in {tests_directory}");
+print(f"Finished testing the algorithm for {number_tests} test cases in {tests_directory}");
 print("Algorithm failures: ", bad_counter)
 print(f"Total size for simply sending: {send_file_total_size}")
 print(f"Total size for algorithm: {algorithm_total_size}")
