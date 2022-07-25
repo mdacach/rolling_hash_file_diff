@@ -107,10 +107,10 @@ auto FileDiff::compute_delta(const std::string& my_string, const Signature& sign
     return result;
 }
 
-auto FileDiff::apply_delta(const std::string& my_string, const Delta& delta, const std::size_t chunk_size)
+auto FileDiff::apply_delta(const std::string& basis_string, const Delta& delta, const std::size_t chunk_size)
     -> std::string
 {
-    const auto chunks = split_into_chunks(my_string, chunk_size);
+    const auto chunks = split_into_chunks(basis_string, chunk_size);
     auto result = std::string{};
     auto parse_number = [&delta](auto start)
     {
