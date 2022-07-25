@@ -25,12 +25,20 @@ auto FileDiff::compute_signature(const std::string& input_string, const std::siz
 auto FileDiff::compute_delta(const std::string& my_string, const Signature& signature, const std::size_t chunk_size)
     -> Delta
 {
+    // These are rolling hashes for every possible chunk (regarding shifting)
     const auto all_hashes = compute_rolling_hashes(my_string, chunk_size);
+
     auto get_hash = [&all_hashes](auto start_index)
     {
         assert(start_index < std::size(all_hashes));
         return all_hashes.at(start_index);
     };
+
+    // For each "our" rolling hash, we need to know
+    // 1 - Whether we have the same hash in signature
+    // 2 - The associated *strong* hash in signature, if yes
+    // With a map, we can answer (1) in O(log n) and keeping track
+    // of the id we can answer (2) in O(1).
     const auto rolling_hash_to_id = [&signature]
     {
         const auto& rolling_hashes = signature.rolling_hashes;
@@ -40,52 +48,60 @@ auto FileDiff::compute_delta(const std::string& my_string, const Signature& sign
             result[rolling_hashes.at(i)] = i;
         return result;
     }();
+
     auto result = Delta{};
     for (std::size_t start = 0; start < std::size(my_string);)
     {
-        // If we do not have enough characters to complete a chunk, we will
-        // not match it against the other file
-        if (start + chunk_size - 1 >= std::size(my_string))
+        auto add_byte = [&result, &start, &my_string]
         {
-            result += 'b';
+            result += human_readable_byte_token;
             result += my_string.at(start);
             start += 1;
+        };
+
+        auto add_chunk_reference = [&result, &start, &chunk_size](const auto chunk_id)
+        {
+            result += human_readable_reference_token;
+            result += std::to_string(chunk_id);
+            // We have just processed all this chunk
+            start += chunk_size;
+        };
+
+        // If we do not have enough characters to complete a chunk, it will not match
+        if (start + chunk_size - 1 >= std::size(my_string))
+        {
+            add_byte();
             continue;
         }
 
         const auto this_hash = get_hash(start);
         const auto where = rolling_hash_to_id.find(this_hash);
-        if (where != std::end(rolling_hash_to_id))
+        const auto match_rolling_hash = where != std::end(rolling_hash_to_id);
+        if (match_rolling_hash)
         {
-            // This is a potential match
-            // Let's compare the Strong hashes to be sure
+            // This chunk is a potential match.
+            // To be careful with a hash collision here, we will check if the
+            // strong hash also matches (chances of collision are *very* low then)
+
             const auto& strong_hashes = signature.strong_hashes;
             const auto this_string = my_string.substr(start, chunk_size);
             const auto this_strong_hash = compute_strong_hash(this_string);
 
+            // As signature is a pair of {rolling_hash, strong_hash}, we can find the
+            // candidate chunk's strong hash by the index
             const auto [_, candidate_id] = *where;
             const auto candidate_strong_hash = strong_hashes.at(candidate_id);
 
-            const auto is_match = this_strong_hash == candidate_strong_hash;
-            if (is_match)
-            {
-                result += '@';
-                result += std::to_string(candidate_id);
-                // We have already processed all this chunk
-                start += chunk_size;
-            }
+            const auto is_indeed_match = this_strong_hash == candidate_strong_hash;
+            if (is_indeed_match)
+                add_chunk_reference(candidate_id);
             else
-            {
-                result += 'b';
-                result += my_string.at(start);
-                start += 1;
-            }
+                add_byte();
         }
         else
         {
-            result += 'b';
-            result += my_string.at(start);
-            start += 1;
+            // If not even the rolling hashes matched, it's surely not the same string
+            add_byte();
         }
     }
     return result;
