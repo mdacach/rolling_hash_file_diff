@@ -8,14 +8,15 @@
 auto FileDiff::compute_signature(const std::string& input_string, const std::size_t chunk_size) -> Signature
 {
     const auto chunks = split_into_chunks(input_string, chunk_size);
-    auto get_hash = [](const auto& string)
-    {
-        return compute_single_rolling_hash(string);
-    };
-    auto result = std::vector<Hash>{};
-    result.reserve(std::size(chunks));
+
+    auto result = Signature{};
+    result.rolling_hashes.reserve(std::size(chunks));
+    result.strong_hashes.reserve(std::size(chunks));
     for (const auto& chunk : chunks)
-        result.push_back(get_hash(chunk));
+    {
+        result.rolling_hashes.push_back(compute_single_rolling_hash(chunk));
+        result.strong_hashes.push_back(compute_strong_hash(chunk));
+    }
     return result;
 }
 
@@ -42,10 +43,12 @@ auto FileDiff::compute_delta(const std::string& my_string, const Signature& sign
         }
 
         const auto this_hash = get_hash(start);
-        const auto where = std::ranges::find(signature, this_hash);
-        if (where != std::ranges::end(signature))
+        // TODO: optimize this signature matching
+        const auto& rolling_hashes = signature.rolling_hashes;
+        const auto where = std::ranges::find(rolling_hashes, this_hash);
+        if (where != std::ranges::end(rolling_hashes))
         {
-            const auto equal_chunk_id = std::distance(std::ranges::begin(signature), where);
+            const auto equal_chunk_id = std::distance(std::ranges::begin(rolling_hashes), where);
             result += '@';
             result += std::to_string(equal_chunk_id);
             // We have already processed all this chunk
@@ -160,4 +163,9 @@ auto FileDiff::compute_rolling_hashes(const std::string& input, const std::size_
     }
 
     return result;
+}
+
+auto FileDiff::compute_strong_hash(const std::string& input) -> Hash
+{
+    return std::hash<std::string>{}(input);
 }

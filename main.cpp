@@ -80,8 +80,16 @@ auto save_to_file(const std::string& file_path, const std::string& content) -> v
 auto save_signature_to_file(const std::string& file_path, const FileDiff::Signature& signature) -> void
 {
     auto as_string = std::string{};
-    for (const auto x : signature)
-        as_string += std::to_string(x) + '\n';
+    assert(std::size(signature.rolling_hashes) == std::size(signature.strong_hashes));
+    const auto size = std::size(signature.rolling_hashes);
+    for (std::size_t i = 0; i < size; ++i)
+    {
+        const auto rolling_hash = signature.rolling_hashes.at(i);
+        const auto strong_hash = signature.strong_hashes.at(i);
+        // TODO: Document this file structure.
+        as_string += std::to_string(rolling_hash) + '\n';
+        as_string += std::to_string(strong_hash) + '\n';
+    }
     save_to_file(file_path, as_string);
 }
 
@@ -92,7 +100,15 @@ auto read_signature_from_file(const std::string& file_path) -> FileDiff::Signatu
         throw std::runtime_error("Could not open file\n");
     auto result = FileDiff::Signature{};
     auto current_hash = FileDiff::Hash{};
+    // TODO: Document this input operations.
+    bool is_rolling = true;
     while (input_file >> current_hash)
-        result.push_back(current_hash);
+    {
+        if (is_rolling)
+            result.rolling_hashes.push_back(current_hash);
+        else
+            result.strong_hashes.push_back(current_hash);
+        is_rolling = !is_rolling;
+    }
     return result;
 }

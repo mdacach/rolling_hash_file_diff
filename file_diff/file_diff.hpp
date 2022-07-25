@@ -16,7 +16,16 @@ class FileDiff
 {
 public:
     using Hash = uint64_t;
-    using Signature = std::vector<Hash>;
+    struct Signature
+    {
+        std::vector<Hash> rolling_hashes{};
+        std::vector<Hash> strong_hashes{};
+
+        bool operator==(const Signature& rhs) const
+        {
+            return rolling_hashes == rhs.rolling_hashes && strong_hashes == rhs.strong_hashes;
+        }
+    };
     using Delta = std::string;
 
     static auto compute_signature(const std::string& input_string, std::size_t chunk_size) -> Signature;
@@ -33,6 +42,8 @@ private:
     static auto compute_single_rolling_hash(const std::string& input) -> Hash;
 
     static auto compute_rolling_hashes(const std::string& input, std::size_t chunk_size) -> std::vector<Hash>;
+
+    static auto compute_strong_hash(const std::string& input) -> Hash;
 };
 
 #endif // ROLLING_HASH_FILE_DIFF_FILE_DIFF_HPP
