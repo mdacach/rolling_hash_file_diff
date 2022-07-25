@@ -133,20 +133,26 @@ auto FileDiff::split_into_chunks(const std::string& input_string, const std::siz
 auto FileDiff::compute_single_rolling_hash(const std::string& input) -> Hash
 {
     const auto chunk_size = std::size(input);
-    auto mod = static_cast<uint64_t>(1e9 + 7);
-    auto base = 257; // A prime number
+    const auto mod = static_cast<uint64_t>(1e9 + 7);
+    const auto base = uint64_t{ 257 }; // A prime number
     auto base_powers = std::vector<uint64_t>(chunk_size + 1);
     base_powers.at(0) = 1;
     for (std::size_t i = 1; i <= chunk_size; ++i)
         base_powers.at(i) = (base_powers.at(i - 1) * base) % mod;
+
+    auto value_from_char = [](const char c)
+    {
+        // We use the ASCII value of the character, as unsigned
+        return static_cast<uint64_t>(c);
+    };
 
     auto current_hash = Hash{ 0 };
     for (std::size_t i = 0; i < chunk_size; ++i)
     {
         const auto power = chunk_size - i - 1;
 
-        const auto value_for_this_char = input.at(i) * base_powers.at(power);
-        current_hash += value_for_this_char;
+        const auto value_for_addition = value_from_char(input.at(i)) * base_powers.at(power);
+        current_hash += value_for_addition;
         current_hash %= mod;
     }
     return current_hash;
@@ -154,8 +160,8 @@ auto FileDiff::compute_single_rolling_hash(const std::string& input) -> Hash
 
 auto FileDiff::compute_rolling_hashes(const std::string& input, const std::size_t chunk_size) -> std::vector<Hash>
 {
-    auto mod = static_cast<uint64_t>(1e9 + 7);
-    auto base = 257; // A prime number
+    const auto mod = static_cast<uint64_t>(1e9 + 7);
+    const auto base = uint64_t{ 257 }; // A prime number
     auto base_powers = std::vector<uint64_t>(chunk_size + 1);
     base_powers.at(0) = 1;
     for (std::size_t i = 1; i <= chunk_size; ++i)
@@ -167,12 +173,18 @@ auto FileDiff::compute_rolling_hashes(const std::string& input, const std::size_
 
     auto current_hash = compute_single_rolling_hash(input.substr(0, chunk_size));
 
+    auto value_from_char = [](const char c)
+    {
+        // We use the ASCII value of the character, as unsigned
+        return static_cast<uint64_t>(c);
+    };
+
     auto result = std::vector<Hash>{};
     result.push_back(current_hash);
     for (std::size_t i = chunk_size; i < std::size(input); ++i)
     {
-        const auto to_add = input.at(i);
-        const auto to_remove = input.at(i - chunk_size);
+        const auto to_add = value_from_char(input.at(i));
+        const auto to_remove = value_from_char(input.at(i - chunk_size));
         // We add char at i to the hash
         // And remove the first character of the hash
 
