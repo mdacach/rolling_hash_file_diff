@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 20)
 option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
 # My configurations for development
-set(ENABLE_DEVELOPER_MODE TRUE)
+set(ENABLE_DEVELOPER_MODE FALSE)
 
 if (ENABLE_DEVELOPER_MODE)
     # I use GCC, on Linux
