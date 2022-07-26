@@ -37,6 +37,11 @@ auto main(int argc, const char* argv[]) -> int
                        "will call the signature command with 30 bytes chunk size.\n"s;
 
     // TODO: We do not treat user mistakes nor sanitize the input.
+    if (argc <= 1)
+    {
+        std::cout << usage << '\n';
+        exit(0);
+    }
 
     // 1. Check if user specified a chunk size
     auto chunk_size = std::size_t{ 30 }; // Default chunk size is 30 bytes
@@ -77,6 +82,6 @@ auto main(int argc, const char* argv[]) -> int
     else
     {
         std::cout << usage << '\n';
-        exit(1);
+        exit(0);
     }
 }
