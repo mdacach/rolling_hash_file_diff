@@ -22,6 +22,8 @@ public:
         // is better (cache locality)
 
         // A rolling hash and a strong hash for each "chunk" in our file.
+        // SoA vs AoS: https://en.wikipedia.org/wiki/AoS_and_SoA
+        // (data-oriented design)
         std::vector<Hash> rolling_hashes{};
         std::vector<Hash> strong_hashes{};
 
