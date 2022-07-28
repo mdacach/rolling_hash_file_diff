@@ -124,12 +124,13 @@ auto FileDiff::apply_delta(const std::string& basis_string, const Delta& delta, 
     };
     for (std::size_t current_index = 0; current_index < std::size(delta);)
     {
+        // let '@' be the "reference to chunk" token
+        // and 'b' be the "literal byte" token
         // Current symbol is either a
-        // 1 - Reference to chunk token "@", and is followed by the chunk id
+        // 1 - Reference to chunk token '@', and is followed by the chunk id
         // 2 - 'b' representing a literal byte, followed by the actual byte
         const auto current_symbol = delta.at(current_index);
-        // TODO: get rid of "magic" @ and designate a const variable for token symbol
-        if (current_symbol == '@')
+        if (current_symbol == human_readable_reference_token)
         {
             // The next symbols represent the id of the matching chunk
             const auto id_as_string = parse_number(current_index + 1);
@@ -140,7 +141,7 @@ auto FileDiff::apply_delta(const std::string& basis_string, const Delta& delta, 
         else
         {
             // This represents that the following one is a byte itself
-            assert(current_symbol == 'b');
+            assert(current_symbol == human_readable_byte_token);
             result += delta.at(current_index + 1); // current_index + 1 is the actual byte
             current_index += 2;
         }
