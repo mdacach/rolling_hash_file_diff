@@ -18,6 +18,7 @@ public:
 public:
     /**
      * Initializes the structure with `initial_input` string (and hash).
+     * REQUIREMENTS: `initial_input` should be of length `window_size`.
      * @param alphabet_base Base to use for hashing computations. Should be bigger than the alphabet.
      * @param modulo Modulo to use for hashing. Should be prime.
      * @param window_size Size of the window for the structure to slide.

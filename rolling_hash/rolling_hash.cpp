@@ -11,6 +11,7 @@
 #include "rolling_hash.hpp"
 
 #include <cassert>
+#include <stdexcept>
 
 auto RollingHash::get_current_hash() const -> Hash
 {
@@ -75,6 +76,11 @@ auto RollingHash::get_ascii_value_from_char(char c) -> uint64_t
 RollingHash::RollingHash(uint64_t alphabet_base, uint64_t modulo, uint64_t window_size, std::string_view initial_input)
     : m_alphabet_base{ alphabet_base }, m_modulo{ modulo }, m_window_size{ window_size }
 {
+    // At all times, we must keep the invariant that the current string is of length window_size
+    // specifically, here we need to check that the initial input is valid.
+    if (std::size(initial_input) != m_window_size)
+        throw std::runtime_error("initial_input must be of length window_size.");
+
     // Precompute the powers for performance reasons.
     m_precomputed_base_powers.reserve(m_window_size);
     m_precomputed_base_powers.push_back(1);
